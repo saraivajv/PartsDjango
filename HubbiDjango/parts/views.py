@@ -2,6 +2,10 @@ from rest_framework import viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from .filters import PartFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Part, CarModel
 from .serializers import PartSerializer, CarModelSerializer, UserRegistrationSerializer
 from .permissions import IsAdmin  # Classe de permissão que permite acesso somente a administradores
@@ -19,14 +23,20 @@ class UserRegistrationView(generics.CreateAPIView):
 class PartViewSet(viewsets.ModelViewSet):
     queryset = Part.objects.all()
     serializer_class = PartSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PartFilter
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'car_models']:
             # Qualquer usuário autenticado pode visualizar as peças
             return [IsAuthenticated()]
         else:
             # Para criação, edição e deleção, somente administradores
             return [IsAuthenticated(), IsAdmin()]
+    
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
     def associate(self, request, pk=None):
@@ -72,11 +82,41 @@ class PartViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
     def restock(self, request):
         """
-        Endpoint para acionar a reposição automática de estoque.
-        Aqui você pode, por exemplo, chamar uma tarefa assíncrona via Celery.
+        Endpoint para acionar a reposição automática de estoque manualmente.
+        Este endpoint é acessível apenas para administradores.
+        
+        Quando acionado, ele dispara a tarefa Celery que verifica o estoque
+        e reabastece as peças que estão abaixo do limite configurado.
         """
-        # Exemplo: auto_restock.delay()  (se estiver usando Celery)
-        return Response({'status': 'Restock process triggered'})
+        from .tasks import auto_restock
+        task = auto_restock.delay()
+        return Response({'status': 'Restock process triggered', 'task_id': task.id})
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
+    def import_csv(self, request):
+        """
+        Endpoint para importar peças via planilha CSV.
+        O arquivo deve ser enviado com a chave "file" (multipart/form-data).
+        O CSV deve ter o seguinte formato:
+        
+        part_number, name, details, price, quantity
+        XPTO1234, Filtro de Óleo, Filtro de alta qualidade, 45.00, 50
+        ABC123, Pastilha de Freio, Conjunto de 4 pastilhas, 120.00, 30
+        """
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "Nenhum arquivo enviado."}, status=400)
+        try:
+            # Lê o conteúdo do arquivo e decodifica (assumindo codificação utf-8)
+            file_data = file.read().decode('utf-8')
+        except Exception as e:
+            return Response({"error": f"Erro ao ler o arquivo: {e}"}, status=400)
+        
+        # Importa a tarefa do Celery e a dispara de forma assíncrona
+        from .tasks import import_parts_csv
+        task = import_parts_csv.delay(file_data)
+        return Response({"status": "Importação CSV iniciada", "task_id": task.id})
+    
 
 # ViewSet para a entidade CarModel
 class CarModelViewSet(viewsets.ModelViewSet):
@@ -84,10 +124,14 @@ class CarModelViewSet(viewsets.ModelViewSet):
     serializer_class = CarModelSerializer
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'parts']:
             return [IsAuthenticated()]
         else:
             return [IsAuthenticated(), IsAdmin()]
+    
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
         
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def parts(self, request, pk=None):
