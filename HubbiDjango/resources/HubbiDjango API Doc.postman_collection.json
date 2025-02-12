@@ -1,0 +1,506 @@
+{
+	"info": {
+		"_postman_id": "21ba0315-c166-4ad8-9b4d-3c603efa7dac",
+		"name": "HubbiDjango API Doc",
+		"description": "Coleção de endpoints do sistema HubbiDjango com autenticação JWT.\n\nEsta coleção contempla endpoints para:\n\n• Registro de usuário\n• Autenticação (obtenção e renovação de token JWT)\n• CRUD de Part (Peça) e CarModel (Modelo de Carro)\n• Operações de associação entre Part e CarModel\n• Acionamento de reposição automática de estoque (para administradores)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16448737"
+	},
+	"item": [
+		{
+			"name": "User Registration",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"testpassword\",\n    \"user_type\": \"common\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/register/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"register",
+						""
+					]
+				},
+				"description": "Endpoint para registrar um novo usuário. Este endpoint não requer autenticação."
+			},
+			"response": []
+		},
+		{
+			"name": "Obtain JWT Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"testpassword\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/token/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"token",
+						""
+					]
+				},
+				"description": "Endpoint para obtenção do token JWT (access e refresh) usando as credenciais do usuário."
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh JWT Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh\": \"<seu_refresh_token_aqui>\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/token/refresh/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"token",
+						"refresh",
+						""
+					]
+				},
+				"description": "Endpoint para renovar o token de acesso utilizando o token de refresh."
+			},
+			"response": []
+		},
+		{
+			"name": "List Parts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/parts/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						""
+					]
+				},
+				"description": "Endpoint para listar todas as peças disponíveis. Acesso permitido para qualquer usuário autenticado."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Part",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"part_number\": \"P1234\",\n    \"name\": \"Filtro de Óleo\",\n    \"details\": \"Filtro de óleo para motor X\",\n    \"price\": 99.99,\n    \"quantity\": 50\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parts/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						""
+					]
+				},
+				"description": "Endpoint para cadastro de uma nova peça. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve Part Detail",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/parts/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para visualizar os detalhes de uma peça específica, incluindo os modelos de carro associados. Acesso permitido para usuários autenticados."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Part",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"price\": 89.99,\n    \"quantity\": 60\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parts/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para atualizar as informações de uma peça existente. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Part",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/parts/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para remover uma peça do sistema. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Associate Part with Car Models",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"car_model_ids\": [1, 2]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parts/1/associate/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"1",
+						"associate",
+						""
+					]
+				},
+				"description": "Endpoint para associar uma peça a um ou mais modelos de carro. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Disassociate Part from Car Models",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"car_model_ids\": [1]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parts/1/disassociate/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"1",
+						"disassociate",
+						""
+					]
+				},
+				"description": "Endpoint para remover a associação entre uma peça e os modelos de carro informados. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Restock Parts",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/parts/restock/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parts",
+						"restock",
+						""
+					]
+				},
+				"description": "Endpoint para acionar o processo de reposição automática de estoque. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "List Car Models",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/car_models/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"car_models",
+						""
+					]
+				},
+				"description": "Endpoint para listar todos os modelos de carro cadastrados. Acesso permitido para qualquer usuário autenticado."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Car Model",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Modelo X\",\n    \"manufacturer\": \"Fabricante Y\",\n    \"year\": 2020\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/car_models/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"car_models",
+						""
+					]
+				},
+				"description": "Endpoint para cadastrar um novo modelo de carro. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve Car Model Detail",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/car_models/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"car_models",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para visualizar os detalhes de um modelo de carro específico. Acesso permitido para usuários autenticados."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Car Model",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"year\": 2021\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/car_models/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"car_models",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para atualizar as informações de um modelo de carro. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Car Model",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/car_models/1/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"car_models",
+						"1",
+						""
+					]
+				},
+				"description": "Endpoint para remover um modelo de carro do sistema. Acesso permitido apenas para administradores."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		}
+	]
+}
