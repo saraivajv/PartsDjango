@@ -1,0 +1,22 @@
+# Django (core)
+Django==4.2.5
+
+# Django REST Framework + Extras
+djangorestframework==3.14.0
+django-filter==23.2
+djangorestframework-simplejwt==5.2.2
+
+# Celery + Redis
+celery==5.3.4
+redis==4.6.0
+django-redis==5.3.1
+
+# PostgreSQL driver
+psycopg2-binary==2.9.7
+
+# Testing
+pytest==7.4.0
+pytest-django==4.5.2
+
+# (Optional) If you need environment variable support
+python-dotenv==1.0.0
